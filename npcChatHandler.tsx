@@ -1,6 +1,9 @@
 // npcChatHandler.ts
 
-import { getNobleDialog } from "../dialog/nobleDialog";
+import { PrismaClient } from "@prisma/client";
+import { getNobleDialog } from "./src/modules/dialog/nobleDialog";
+
+const prisma = new PrismaClient();
 
 export async function handleNobleInteraction(nobleId: number, userId: number) {
   const noble = await prisma.nPC.findUnique({ where: { id: nobleId } });
