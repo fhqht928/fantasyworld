@@ -1,6 +1,7 @@
 // src/modules/reputation/reputationService.ts
 
 import { PrismaClient } from "@prisma/client";
+import { generateBountyQuest } from "../quest/generateBountyQuest";
 
 const prisma = new PrismaClient();
 
