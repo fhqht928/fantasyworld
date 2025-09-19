@@ -1,6 +1,6 @@
 // src/modules/quest/archaeologyQuestGenerator.ts
 
-import { callGeminiAPI } from "../services/geminiService";
+import { callGeminiAPI } from "../../services/geminiService";
 
 export async function generateArchaeologyQuest(userName: string) {
   const prompt = `

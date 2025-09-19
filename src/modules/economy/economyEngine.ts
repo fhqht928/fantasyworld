@@ -1,7 +1,7 @@
 // src/modules/economy/economyEngine.ts
 
 import { PrismaClient } from "@prisma/client";
-import { callGeminiAPI } from "../services/geminiService";
+import { callGeminiAPI } from "../../services/geminiService";
 
 const prisma = new PrismaClient();
 
