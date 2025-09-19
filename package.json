@@ -3,6 +3,7 @@
     "prisma": "^6.16.2"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.0.0",
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.16.2",
     "dotenv": "^17.2.2"
