@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int                @id @default(autoincrement())
+  username   String             @unique
+  password   String
+  positionX  Float              @default(0)
+  positionY  Float              @default(0)
+  reputation Int                @default(0)
+  notoriety  Int                @default(0)
+  maxHp      Int                @default(100)
+  maxMp      Int                @default(50)
+  isOnline   Boolean            @default(false)
+  profession PlayerProfession[]
+  inventory  ItemInstance[]
+  titles     PlayerTitle[]
+  languages  UserLanguage[]
+  quests     Quest[]            @relation("UserQuests")
+}
+
+model NPC {
+  id          Int        @id @default(autoincrement())
+  name        String
+  gender      String
+  birthYear   Int
+  deathYear   Int?
+  isAlive     Boolean    @default(true)
+  mood        String
+  fame        Int        @default(0)
+  notoriety   Int        @default(0)
+  cityId      Int
+  city        City       @relation("CityNPCs", fields: [cityId], references: [id])
+  partnerId   Int?
+  parent1Id   Int?
+  parent2Id   Int?
+  isNoble     Boolean    @default(false)
+  nobleTitle  String?
+  personality String?
+  background  String
+  job         String
+  skills      String
+  languageId  Int
+  language    Language   @relation(fields: [languageId], references: [id])
+  religionId  Int?
+  religion    Religion?  @relation(fields: [religionId], references: [id])
+  stories     NPCStory[]
+  quests      Quest[]    @relation("IssuerQuests")
+}
+
+model City {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  population  Int
+  countryId   Int
+  country     Country    @relation(fields: [countryId], references: [id])
+  wildAreas   WildArea[]
+  dungeons    Dungeon[]
+  weather     Weather?
+  npcs        NPC[]      @relation("CityNPCs")
+  economies   Economy[]
+}
+
+model Country {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  language    String
+  cities      City[]
+  wildAreas   WildArea[]
+  dungeons    Dungeon[]
+}
+
+model WildArea {
+  id          Int                @id @default(autoincrement())
+  name        String
+  type        String
+  dangerLevel Int
+  countryId   Int
+  country     Country            @relation(fields: [countryId], references: [id])
+  populations AnimalPopulation[]
+  cityId      Int?
+  city        City?              @relation(fields: [cityId], references: [id])
+}
+
+model Dungeon {
+  id               Int     @id @default(autoincrement())
+  name             String
+  levelRequirement Int
+  isRaid           Boolean
+  countryId        Int
+  country          Country @relation(fields: [countryId], references: [id])
+  cityId           Int?
+  city             City?   @relation(fields: [cityId], references: [id])
+}
+
+model Quest {
+  id                 Int       @id @default(autoincrement())
+  title              String
+  description        String
+  isTaken            Boolean   @default(false)
+  takenAt            DateTime?
+  completedAt        DateTime?
+  reputationRequired Int
+  notorietyTrigger   Boolean
+  issuerId           Int?
+  issuer             NPC?      @relation("IssuerQuests", fields: [issuerId], references: [id])
+  takerId            Int?
+  taker              User?     @relation("UserQuests", fields: [takerId], references: [id])
+  bountyTargetId     Int?
+  metadata           Json?
+}
+
+model PlayerProfession {
+  id         Int    @id @default(autoincrement())
+  userId     Int
+  user       User   @relation(fields: [userId], references: [id])
+  type       String
+  skillLevel Int    @default(1)
+  experience Int    @default(0)
+}
+
+model Item {
+  id               Int              @id @default(autoincrement())
+  name             String
+  quality          Int
+  instances        ItemInstance[]
+  recipesAsProduct Recipe[]         @relation("ProductItem")
+  recipeMaterials  RecipeMaterial[] @relation("MaterialItem")
+}
+
+model ItemInstance {
+  id       Int  @id @default(autoincrement())
+  userId   Int
+  user     User @relation(fields: [userId], references: [id])
+  itemId   Int
+  item     Item @relation(fields: [itemId], references: [id])
+  quantity Int
+}
+
+model Recipe {
+  id         Int              @id @default(autoincrement())
+  name       String
+  profession String
+  difficulty Int
+  productId  Int
+  product    Item             @relation("ProductItem", fields: [productId], references: [id])
+  materials  RecipeMaterial[]
+}
+
+model RecipeMaterial {
+  id       Int    @id @default(autoincrement())
+  recipeId Int
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  itemId   Int
+  item     Item   @relation("MaterialItem", fields: [itemId], references: [id])
+  quantity Int
+}
+
+model Corpse {
+  id            Int      @id @default(autoincrement())
+  npcId         Int?
+  userId        Int?
+  type          String
+  decayStage    String
+  location      String
+  causeOfDeath  String?
+  isWaterlogged Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AnimalPopulation {
+  id         Int      @id @default(autoincrement())
+  species    String
+  type       String
+  population Int
+  areaId     Int
+  area       WildArea @relation(fields: [areaId], references: [id])
+}
+
+model Language {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  isAncient     Boolean        @default(false)
+  region        String?
+  speakers      NPC[]
+  userLanguages UserLanguage[]
+}
+
+model UserLanguage {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  languageId Int
+  language   Language @relation(fields: [languageId], references: [id])
+  fluency    Int
+}
+
+model Religion {
+  id                 Int        @id @default(autoincrement())
+  name               String
+  originRegion       String
+  description        String
+  doctrine           String
+  influenceLevel     Int
+  estimatedFollowers Int
+  artifacts          Artifact[]
+  followers          NPC[]
+}
+
+model Artifact {
+  id         Int      @id @default(autoincrement())
+  name       String
+  lore       String
+  powerHint  String
+  religionId Int
+  religion   Religion @relation(fields: [religionId], references: [id])
+}
+
+model GlobalEvent {
+  id             Int       @id @default(autoincrement())
+  title          String
+  type           String
+  affectedRegion String
+  description    String
+  durationDays   Int
+  impact         String
+  isActive       Boolean   @default(true)
+  startedAt      DateTime
+  endedAt        DateTime?
+}
+
+model Weather {
+  id        Int      @id @default(autoincrement())
+  cityId    Int      @unique
+  city      City     @relation(fields: [cityId], references: [id])
+  condition String
+  updatedAt DateTime
+}
+
+model NPCStory {
+  id        Int      @id @default(autoincrement())
+  npcId     Int
+  npc       NPC      @relation(fields: [npcId], references: [id])
+  title     String
+  summary   String
+  createdAt DateTime @default(now())
+}
+
+model PlayerTitle {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  region    String
+  grantedAt DateTime
+  authority Int
+}
+
+model Economy {
+  id     Int    @id @default(autoincrement())
+  cityId Int
+  city   City   @relation(fields: [cityId], references: [id])
+  item   String
+  price  Int
+  demand String
+  supply String
+
+  @@unique([cityId, item], name: "cityId_item")
+}
+
+model WorldTime {
+  id            Int      @id @default(autoincrement())
+  lastSimulated DateTime
+}
+
+model WorldSnapshot {
+  id        Int      @id @default(autoincrement())
+  label     String
+  jsonData  Json
+  createdAt DateTime @default(now())
+}
+
+model TaxPolicy {
+  id        Int      @id @default(autoincrement())
+  region    String   @unique
+  rate      Int
+  updatedAt DateTime
+}
