@@ -1,6 +1,7 @@
 // src/modules/world/worldClock.ts
 
 import { PrismaClient } from "@prisma/client";
+import { simulateTimePassed } from "../simulation/simulateTimePassed";
 
 const prisma = new PrismaClient();
 
