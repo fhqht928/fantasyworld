@@ -1,12 +1,28 @@
 // src/main.ts
 
-import express from "express";
-import { updateWorldTime } from "./modules/world/worldClock";
+import "dotenv/config";
+import "./app";
+import { GameEngine } from "./modules/game/gameEngine";
 
-const app = express();
-const port = 3000;
+async function bootstrap() {
+  const engine = new GameEngine({
+    realMinutesPerTick: 1, // 로컬 개발 시 빠르게 세계가 변화하도록 1분마다 틱 실행
+    globalEventChance: 0.2,
+  });
 
-app.listen(port, async () => {
-  console.log(`서버 시작됨: 포트 ${port}`);
-  await updateWorldTime(); // 시작 시 시간 업데이트 및 경과 처리
+  await engine.bootstrap();
+  engine.start();
+
+  const shutdown = async () => {
+    await engine.shutdown();
+    process.exit(0);
+  };
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+}
+
+bootstrap().catch((error) => {
+  console.error("❌ 게임 서버 초기화 실패", error);
+  process.exit(1);
 });
