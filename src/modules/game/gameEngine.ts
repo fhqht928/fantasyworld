@@ -179,7 +179,7 @@ export class GameEngine {
 
   private async refreshPolitics() {
     const candidates = await this.prisma.user.findMany({
-      where: { reputation: { gte: 80 } },
+      where: { reputation: { gte: 60 } },
       select: { id: true },
     });
 
